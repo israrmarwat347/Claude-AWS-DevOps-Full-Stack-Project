@@ -1,0 +1,75 @@
+name: CI
+on:
+  pull_request:
+    branches: [main, dev]
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: {persist-credentials: false}
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with: {version: '0.11.33', enable-cache: true}
+      - name: Lint, test and audit Python dependencies
+        working-directory: backend
+        run: |
+          uv sync --frozen --python 3.12
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run pytest -q
+          uv run pip-audit -r requirements.txt --disable-pip
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: {node-version: '24', cache: npm, cache-dependency-path: frontend/package-lock.json}
+      - name: Validate and build React
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm test
+          npm run build
+          npm audit --audit-level=high
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with: {name: frontend, path: frontend/dist, retention-days: 7, if-no-files-found: error}
+  infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: {persist-credentials: false}
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with: {terraform_version: '1.16.1', terraform_wrapper: false}
+      - name: Terraform format and schema validation
+        env: {CHECKPOINT_DISABLE: '1'}
+        run: |
+          terraform fmt -check -recursive
+          terraform -chdir=infra init -backend=false -input=false -lockfile=readonly
+          terraform -chdir=infra validate
+          terraform -chdir=infra/bootstrap init -backend=false -input=false -lockfile=readonly
+          terraform -chdir=infra/bootstrap validate
+      - name: Scan infrastructure and secrets
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: misconfig,secret
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          trivyignores: .trivyignore.yaml
+          skip-dirs: backend/.venv,frontend/node_modules,infra/.terraform,infra/bootstrap/.terraform,.git
+  validate:
+    if: always()
+    needs: [backend, frontend, infrastructure]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          BACKEND_RESULT: ${{ needs.backend.result }}
+          FRONTEND_RESULT: ${{ needs.frontend.result }}
+          INFRA_RESULT: ${{ needs.infrastructure.result }}
+        run: test "$BACKEND_RESULT" = success && test "$FRONTEND_RESULT" = success && test "$INFRA_RESULT" = success

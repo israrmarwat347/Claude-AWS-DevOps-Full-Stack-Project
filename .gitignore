@@ -1,0 +1,53 @@
+# Credentials and local settings
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials
+secret*.json
+*.local.tfvars
+*.auto.tfvars
+*.tfbackend
+# Terraform state, backend configuration, temporary plans, and crash data
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.plan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+# Dependency/provider locks are intentionally committed.
+# Python
+**/.venv/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+# Node/builds
+**/node_modules/
+**/dist/
+coverage/
+*.tsbuildinfo
+# Workstation and local validation artifacts
+.DS_Store
+.idea/
+.vscode/
+*.log
+.validation/
+bootstrap-outputs.json
+deploy-outputs.json
+
+infra/bootstrap/backend.remote.tf

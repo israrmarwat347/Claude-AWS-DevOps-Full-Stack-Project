@@ -1,0 +1,14 @@
+# Accepted architecture decisions only. See docs/SECURITY.md. No vulnerability or secret rules are ignored.
+misconfigurations:
+  - id: AWS-0011
+    paths: [infra/edge.tf]
+    statement: "CloudFront serves public static assets; the paid API is protected by a regional ALB WAF in staging/prod plus authenticated per-user limits. Dev WAF is explicitly off for cost."
+  - id: AWS-0053
+    paths: [infra/edge.tf]
+    statement: "The public ALB is reachable only from CloudFront's managed IP prefix list on 443 and requires a 48-character origin verification secret."
+  - id: AWS-0132
+    paths: [infra/edge.tf]
+    statement: "Static assets and ALB access logs use SSE-S3; ALB log delivery requires SSE-S3. Terraform state uses a customer-managed KMS key. All buckets block public access and deny non-TLS requests."
+  - id: AWS-0104
+    paths: [infra/network.tf]
+    statement: "Private tasks require HTTPS egress to Anthropic and AWS APIs. Security groups cannot allowlist changing API hostnames. Egress is limited to TCP 443 through NAT; add an egress proxy for domain-level enforcement."

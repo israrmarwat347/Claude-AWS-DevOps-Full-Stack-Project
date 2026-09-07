@@ -1,0 +1,52 @@
+name: Terraform PR plan
+on:
+  pull_request:
+    branches: [main, dev]
+permissions:
+  contents: read
+jobs:
+  plan:
+    # Never provide AWS credentials to fork PRs. Use pull_request, never pull_request_target.
+    if: github.event.pull_request.head.repo.full_name == github.repository && vars.AWS_ACCOUNT_ID != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: {environment: [dev, staging, prod]}
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      DEPLOY_ENV: ${{ matrix.environment }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+      TF_VAR_project: ${{ vars.PROJECT_NAME }}
+      TF_VAR_domain_name: ${{ vars.DOMAIN_NAME }}
+      TF_VAR_route53_zone_id: ${{ vars.ROUTE53_ZONE_ID }}
+      TF_VAR_runtime_boundary_arn: ${{ vars.RUNTIME_BOUNDARY_ARN }}
+      TF_VAR_release_sha: ${{ github.event.pull_request.head.sha }}
+      TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+      TF_STATE_KMS_KEY_ARN: ${{ vars.TF_STATE_KMS_KEY_ARN }}
+      CHECKPOINT_DISABLE: '1'
+      TF_IN_AUTOMATION: 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: {persist-credentials: false}
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with: {terraform_version: '1.16.1', terraform_wrapper: false}
+      - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.PROJECT_NAME }}-plan-${{ matrix.environment }}
+          role-session-name: pr-plan-${{ github.run_id }}
+      - name: Read-only plan
+        env: {AWS_ACCOUNT_ID: '${{ vars.AWS_ACCOUNT_ID }}'}
+        run: |
+          bash scripts/tf-init.sh
+          current=$(terraform -chdir=infra output -raw deployed_image 2>/dev/null || true)
+          if [ -z "$current" ]; then
+            current="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$TF_VAR_project-$DEPLOY_ENV@sha256:$(printf '%064d' 0)"
+          fi
+          export TF_VAR_image_uri="$current"
+          # No plan artifact is uploaded: Terraform plans can contain sensitive origin data.
+          terraform -chdir=infra plan -input=false -lock=false -var-file="environments/$DEPLOY_ENV.tfvars" -no-color
+          echo "Plan completed for $DEPLOY_ENV. It uses the existing image (or a placeholder before the first deploy)." >> "$GITHUB_STEP_SUMMARY"
