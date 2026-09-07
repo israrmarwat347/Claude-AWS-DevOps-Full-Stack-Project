@@ -2,7 +2,7 @@
 
 A complete repository for a private Claude chatbot: React, FastAPI, streaming responses, Cognito authentication, DynamoDB history, ECS Fargate, Terraform, and GitHub Actions.
 
-**Implementation status:** application and infrastructure code are provided with local verification recorded in [VALIDATION.md](docs/VALIDATION.md). No live AWS deployment or repository push has been performed. Deployment requires your AWS account, domain, Anthropic API key, and GitHub repository configuration. AWS and Anthropic usage are billable.
+**Implementation status:** application and infrastructure code are provided with local verification recorded in [VALIDATION.md](docs/VALIDATION.md), and the repository is published to GitHub. No live AWS deployment has been performed yet. Deployment requires your AWS account, domain, Anthropic API key, and GitHub repository configuration. AWS and Anthropic usage are billable.
 
 ```mermaid
 flowchart TD
