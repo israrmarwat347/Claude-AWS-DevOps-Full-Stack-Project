@@ -2,7 +2,7 @@
 
 A complete repository for a private Claude chatbot: React, FastAPI, streaming responses, Cognito authentication, DynamoDB history, ECS Fargate, Terraform, and GitHub Actions.
 
-**Implementation status:** application and infrastructure code are provided with local verification recorded in [VALIDATION.md](docs/VALIDATION.md), and the repository is published to GitHub. No live AWS deployment has been performed yet. Deployment requires your AWS account, domain, Anthropic API key, and GitHub repository configuration. AWS and Anthropic usage are billable.
+**Implementation status:** application and infrastructure code are provided with local verification recorded in [VALIDATION.md](docs/VALIDATION.md), and the repository is published to GitHub. No live AWS deployment has been performed yet. A free local practice mode is included; the production AWS deployment requires your AWS account, domain, Anthropic API key, and GitHub repository configuration. AWS and Anthropic usage are billable.
 
 ```mermaid
 flowchart TD
@@ -42,6 +42,18 @@ npm run dev
 Open [localhost:5173](http://localhost:5173). Demo mode has simulated replies, a single local user, and in-memory history that resets on restart. It does not contact AWS or Anthropic. Keep local servers bound to loopback.
 
 For real local Claude replies, set `MOCK_CLAUDE=false` and add your key to the ignored `backend/.env`. Never place credentials in `VITE_*` variables. For deployed environments, the backend fetches the key directly from Secrets Manager.
+
+## Free local practice mode
+
+If you do not have AWS credits, a domain, or an Anthropic API key, run the complete frontend and backend locally with Docker:
+
+```bash
+docker compose -f docker-compose.local.yml up --build
+```
+
+Then open [localhost:5173](http://localhost:5173). This mode uses simulated Claude replies, local demo authentication, and an in-memory conversation store. It needs no AWS account, AWS credentials, domain, or paid API call. Stop it with `Ctrl+C`; run `docker compose -f docker-compose.local.yml down` to remove the local containers. See [LOCAL_PRACTICE.md](docs/LOCAL_PRACTICE.md) for Docker-free instructions and troubleshooting.
+
+The Terraform under `infra/` is intentionally kept as a separate production path. Running that path provisions billable AWS resources and is not required for free local practice.
 
 ## Included
 

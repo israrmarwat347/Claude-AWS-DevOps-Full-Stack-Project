@@ -1,6 +1,6 @@
 # Validation record
 
-Checked September 7, 2026, during generation. Tests used local mocks, generated test signing keys and simulated AWS services. No paid Anthropic request or live AWS deployment was made.
+Checked September 8, 2026, during generation. Tests used local mocks, generated test signing keys and simulated AWS services. No paid Anthropic request or live AWS deployment was made.
 
 | Check | Result |
 | --- | --- |
@@ -8,6 +8,7 @@ Checked September 7, 2026, during generation. Tests used local mocks, generated 
 | Frontend tests | 3 passed: split UTF-8/SSE framing, interrupted streams, and post-200 error events |
 | React TypeScript + Vite production build | Passed |
 | Python lint and formatting | Passed |
+| Free local practice configuration | Compose YAML parsed successfully; Docker image build not run because Docker is unavailable in this runtime |
 | Python dependency audit | No known vulnerabilities reported for the locked runtime requirements |
 | npm dependency audit | Zero vulnerabilities reported |
 | GitHub workflow syntax | actionlint passed for all four workflows |

@@ -1,4 +1,4 @@
-.PHONY: backend frontend test format build
+.PHONY: backend frontend test format build local
 backend:
 	cd backend && uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload --no-access-log
 frontend:
@@ -12,3 +12,5 @@ format:
 build:
 	cd frontend && npm run build
 	docker build -f backend/Dockerfile -t claude-platform:local .
+local:
+	docker compose -f docker-compose.local.yml up --build
