@@ -7,7 +7,7 @@ permissions:
 jobs:
   plan:
     # Never provide AWS credentials to fork PRs. Use pull_request, never pull_request_target.
-    if: github.event.pull_request.head.repo.full_name == github.repository && vars.AWS_ACCOUNT_ID != ''
+    if: vars.AWS_DEPLOY_ENABLED == 'true' && github.event.pull_request.head.repo.full_name == github.repository && vars.AWS_ACCOUNT_ID != ''
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
