@@ -1,6 +1,6 @@
 # Validation record
 
-Checked September 7, 2026, during generation. Tests used local mocks, generated test signing keys and simulated AWS services. No paid Anthropic request or live AWS deployment was made.
+Checked September 8, 2026, during generation. Tests used local mocks, generated test signing keys and simulated AWS services. No paid Anthropic request or live AWS deployment was made.
 
 | Check | Result |
 | --- | --- |
@@ -8,6 +8,7 @@ Checked September 7, 2026, during generation. Tests used local mocks, generated 
 | Frontend tests | 3 passed: split UTF-8/SSE framing, interrupted streams, and post-200 error events |
 | React TypeScript + Vite production build | Passed |
 | Python lint and formatting | Passed |
+| Free local practice configuration | Compose YAML parsed successfully; Docker image build not run because Docker is unavailable in this runtime |
 | Python dependency audit | No known vulnerabilities reported for the locked runtime requirements |
 | npm dependency audit | Zero vulnerabilities reported |
 | GitHub workflow syntax | actionlint passed for all four workflows |
@@ -20,7 +21,7 @@ Checked September 7, 2026, during generation. Tests used local mocks, generated 
 | Git whitespace and ignores | Passed; `.env`, Terraform states/backups, secret JSON, private keys, node_modules and Python caches are ignored |
 | Docker image build/image vulnerability scan | **Not run locally:** Docker is unavailable in this runtime; mandatory build/scan steps are included in GitHub Actions |
 | Live AWS plan/apply, OIDC, DNS/TLS, Cognito and Claude integration | **Not run:** requires your account, domain, credentials and configuration |
-| GitHub push | **Not run:** repository URL was not supplied |
+| GitHub push | Published to the configured GitHub repository; `main` and `dev` contain the project tree |
 
 The complete Trivy report was inspected even though the execution wrapper did not return a final process status. It records 20 successful Docker configuration checks, 44 successful application Terraform checks and 29 successful bootstrap checks, with zero unaccepted failures. The generated CI reruns these checks against the actual commit. The scan uses the HIGH/CRITICAL threshold; accepted findings are not the same as a claim that all hardening recommendations have been implemented.
 

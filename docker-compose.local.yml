@@ -1,0 +1,39 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.local
+    environment:
+      APP_ENV: local
+      LOCAL_AUTH: "true"
+      MOCK_CLAUDE: "true"
+      AWS_REGION: eu-west-1
+      MAX_OUTPUT_TOKENS: "1024"
+      GENERATION_TIMEOUT: "120"
+      RETENTION_DAYS: "30"
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8000/api/health/live', timeout=3)
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 10
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.local
+    environment:
+      API_PROXY_TARGET: http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "5173:5173"

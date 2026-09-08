@@ -36,7 +36,11 @@ class Claude:
                 raise RuntimeError("Anthropic credential is missing")
             return key
         async with self.key_lock:
-            if time.monotonic() - self.cached_at > 300 or not self.cached_key:
+            if (
+                not self.cached_key
+                or self.cached_at <= 0
+                or time.monotonic() - self.cached_at > 300
+            ):
                 result = await asyncio.to_thread(
                     self.secrets.get_secret_value, SecretId=self.settings.anthropic_secret_arn
                 )
