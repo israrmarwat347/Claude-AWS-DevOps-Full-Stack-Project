@@ -69,6 +69,25 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173).
 
+## GitHub Actions without AWS
+
+AWS publishing, deployment, and Terraform PR plans are opt-in. Leave the repository
+Actions variable `AWS_DEPLOY_ENABLED` unset or set it to `false` for local practice.
+CI checks remain enabled. Pushes to `main` and `dev` still build the backend Docker
+image and run its security scan, but skip AWS authentication, ECR publishing, and
+deployment. No AWS credentials are needed for this path. GitHub Actions usage is
+still subject to your account's billing and usage limits.
+
+To enable the billable AWS path later, complete [SETUP.md](SETUP.md), including
+OIDC roles, ECR repositories, Terraform state, and deployment environment settings.
+Configure repository Actions variables `AWS_REGION`, `BUILD_ROLE_ARN`,
+`AWS_ACCOUNT_ID`, and `PROJECT_NAME`, plus the other deployment variables described
+there. Only then set the **repository-level** variable `AWS_DEPLOY_ENABLED` to the
+exact string `true`. Subsequent pushes to `dev` deploy dev; pushes to `main` publish
+images for staging/prod and run the existing staged deployment flow and approval
+rules. Unsetting the flag stops future AWS jobs; it does not delete existing AWS
+resources or stop their charges.
+
 ## Important boundaries
 
 Do not set `MOCK_CLAUDE=false` unless you have intentionally configured a real Anthropic API key and accept its usage charges. Do not run Terraform for this local exercise: the `infra/` configuration creates AWS resources such as an ALB, NAT gateways, ECS, CloudFront, and DynamoDB that can incur charges. Use [SETUP.md](SETUP.md) only when you are ready for the paid AWS deployment path.
